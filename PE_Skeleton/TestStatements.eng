@@ -1,0 +1,14 @@
+To Run
+    Print with "Gauss sum of a series"
+    Print with "---------------------"
+    Make number named counter
+    Make number named sum
+    Set counter to 1
+    Set sum to 0
+    Loop counter < 10
+        Set sum to sum + counter
+        Set counter to counter + 1
+    If sum != 45
+        Print with "Wrong answer",sum
+    else
+        Print with "We got it right!" 

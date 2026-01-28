@@ -1,0 +1,17 @@
+To Factorial with number, number named retVal
+    Make number named counter
+    Set counter to 1
+    Set retVal to 1
+    Loop counter <= number
+        Set retVal to retVal * counter
+        Set counter to counter + 1
+
+To Run
+    Print with "Factorial"
+    Print with "---------"
+    Make number named tenFac
+    Make number named fiveFac
+    Factorial with 10, tenFac
+    Print with tenFac
+    Factorial with 5, fiveFac
+    Print with fiveFac

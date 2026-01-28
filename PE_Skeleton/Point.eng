@@ -1,0 +1,17 @@
+A point is
+    number x
+    number y
+
+To Assign a point with number named xin, number named yin
+    Set x to xin
+    Set y to yin
+    
+To Run
+    Print with "Point"
+    Print with "-----"
+    Make point named origin
+    Make point named dest
+    Assign origin with 0,0
+    Assign dest with 20,30
+    Print with origin
+    Print with dest
