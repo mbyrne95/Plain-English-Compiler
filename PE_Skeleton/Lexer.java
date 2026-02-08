@@ -5,6 +5,16 @@ import java.util.HashMap;
 import java.util.List;
 
 public class Lexer    {
+
+    private final HashMap<String, Token.TokenTypes> keywords;
+    private final HashMap<String, Token.TokenTypes> punctuation;    // for later
+    private final TextManager tm;
+    private enum State {
+        ENTRY,
+        WORD,
+        NUMBER,
+    }
+
     public Lexer(String input) {
         tm = new TextManager(input);
 
@@ -32,72 +42,97 @@ public class Lexer    {
         punctuation = new HashMap<>();
     }
 
-    private final HashMap<String, Token.TokenTypes> keywords;
-    private final HashMap<String, Token.TokenTypes> punctuation;    // for later
-    private final TextManager tm;
 
     public List<Token> lex() {
+        State CurrentState = State.ENTRY;
         List<Token> ListOfTokens = new ArrayList<>();
+        StringBuilder sb = new StringBuilder();
         String CurrentWord = "";
+
+        int ColumnNumber = 0;
+        int LineNumber = 0;
+        int TokenStartColumn = 0;
+        int TokenStartLine = 0;
 
         while(tm.peekCharacter() != '~') {
             char c = tm.peekCharacter();
+            switch(CurrentState){
+                case ENTRY:
+                    if (c == ' '){
+                        tm.getCharacter();
+                        ColumnNumber += 1;
+                        break;
+                    }
+                    // newline token for a newline
+                    if (c == '\n'){
+                        tm.getCharacter();
+                        ListOfTokens.add(new Token(Token.TokenTypes.NEWLINE, ColumnNumber,LineNumber));
+                        LineNumber += 1;
+                        ColumnNumber = 0;
+                        break;
+                    }
+                    // we hit a new word, starting with a letter
+                    if (Character.isLetter(c)) {
+                        TokenStartLine = LineNumber;
+                        TokenStartColumn = ColumnNumber;
+                        CurrentState = State.WORD;
+                        sb.append(tm.getCharacter());
+                        ColumnNumber += 1;
+                        break;
+                    }
 
-            // ignore spaces
-            if (c == ' '){
-                tm.getCharacter();
-                continue;
+                    // we hit a new digit
+                    if (Character.isDigit(c)){
+                        CurrentState = State.NUMBER;
+                        sb.append(tm.getCharacter());
+                        break;
+                    }
+                case WORD:
+                    // if we hit a space or a \n, the word or identifier is complete
+                    // so we should pass it on to readWord()
+                    if (c == ' ' || c == '\n'){
+                        ListOfTokens.add( readWord(sb.toString(), TokenStartLine, TokenStartColumn) );  // send as lowercase for consistency
+                        sb.setLength(0); // reset stringbuilder
+                        CurrentState = State.ENTRY;
+                        break;
+                    }
+                    // we're still in a word, so just concat the stringbuilder
+                    if (Character.isLetter(c) || Character.isDigit(c)) {
+                        sb.append(tm.getCharacter());
+                        ColumnNumber += 1;
+                        break;
+                    }
+
+                case NUMBER:
+                    break;
             }
-
-            // newline token for a newline
-            if (c == '\n'){
-                //TODO: use actual line/col instead of (0,0)
-                tm.getCharacter();
-                ListOfTokens.add(new Token(Token.TokenTypes.NEWLINE, 0,0));
-                continue;
-            }
-
-            if (Character.isLetter(c)){
-                ListOfTokens.add(readWord());
-                continue;
-            }
-
-            if (Character.isDigit(c)){
-                ListOfTokens.add(readNumber());
-                continue;
-            }
-
-            //if we somehow get here we should probably just ignore and keep going
-            tm.getCharacter();
+        }
+        // if we're at the end of the file, we need to recheck to make sure that we didn't miss anything
+        if ( CurrentState == State.WORD && !sb.isEmpty() ){
+            ListOfTokens.add( readWord(sb.toString(), TokenStartLine, TokenStartColumn) );
+        }
+        // TODO: same for numbers
+        if ( CurrentState == State.NUMBER && !sb.isEmpty() ){
+            ListOfTokens.add( readNumber(sb.toString(), TokenStartLine, TokenStartColumn) );
         }
 
         return ListOfTokens;
     }
 
-    private Token readWord() {
-        // loop while the text manager is both not done and still on letters
-        char c = tm.peekCharacter();
-
-        // use stringbuilder instead of concating strings, more efficient
-        StringBuilder sb = new StringBuilder();
-        while( c != '~' &&  Character.isLetter(c) ){
-            sb.append(tm.getCharacter());
-            c = tm.peekCharacter();
-        }
-        String word = sb.toString().toLowerCase();
-
+    private Token readWord(String token, int StartLine, int StartPosition) {
+        String t = token.toLowerCase(); // lowercase for comparing to hashmap
         //check if the word is a token type, return that token type if so
-        if (keywords.containsKey(word)){
-            return new Token(keywords.get(word), 0, 0);
+        if (keywords.containsKey(t)){
+            return new Token(keywords.get(token), StartLine, StartPosition);
         }
 
         // for now just assume it's an identifier if we didn't get a real word
-        return new Token(Token.TokenTypes.IDENTIFIER, 0, 0);
+        return new Token(Token.TokenTypes.IDENTIFIER, StartLine, StartPosition, token);
     }
 
     // TODO: implement this
-    private Token readNumber() {
-        return new Token(Token.TokenTypes.A, 0, 0);
+    private Token readNumber(String token, int StartLine, int StartPosition) {
+        return new Token(Token.TokenTypes.A, StartLine, StartPosition);
     }
 }
 

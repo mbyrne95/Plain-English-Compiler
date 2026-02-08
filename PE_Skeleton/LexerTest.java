@@ -55,10 +55,11 @@ public class LexerTest {
     }
 
     @Test
-    public void LexTestIdentifier_NoNums() {
-        Lexer lex = new Lexer("lksahf");
+    public void LexTestIdentifier() {
+        Lexer lex = new Lexer("lksahf123");
         List<Token> tokens = lex.lex();
         assertEquals(1, tokens.size());
+        assertEquals("IDENTIFIER lksahf123 @ 0,0", tokens.get(0).toString());
         assertEquals(Token.TokenTypes.IDENTIFIER, tokens.get(0).Type);
     }
 }
