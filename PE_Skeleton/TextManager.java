@@ -11,8 +11,8 @@ public class TextManager
     }
 
     public char getCharacter() {
-        if ( position >= text.length() ) {
-            return '~';    // TODO: ~ tilde should be safe and unused in PE - consider something more pragmatic
+        if ( isAtEnd() ) {
+            return '~';
         }
         char c = text.charAt(position);
         position++;
@@ -20,10 +20,24 @@ public class TextManager
     }
 
     public char peekCharacter() {
-        if ( position >= text.length() ) {
-            return '~';    // TODO: ~ tilde should be safe and unused in PE - consider something more pragmatic
+        if ( isAtEnd() ) {
+            return '~';
         }
         return text.charAt(position);
     }
+
+    public char peekCharacter(int distance) {
+        int i = distance + position;
+        if ( i >= text.length() ) {
+            return '~';
+        }
+        return text.charAt(i);
+    }
+
+    public boolean isAtEnd() {
+        return position >= text.length();
+    }
+
+
 }
 

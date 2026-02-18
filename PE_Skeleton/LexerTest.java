@@ -37,7 +37,7 @@ public class LexerTest {
     }
 
     @Test
-    public void LexTestKeyword() {
+    public void LexTestKeyword() throws SyntaxErrorException {
         Lexer lex = new Lexer("else");
         List<Token> tokens = lex.lex();
         assertEquals(1, tokens.size());
@@ -45,7 +45,7 @@ public class LexerTest {
     }
 
     @Test
-    public void LexTestMulti() {
+    public void LexTestMulti() throws SyntaxErrorException {
         Lexer lex = new Lexer("if else set");
         List<Token> tokens = lex.lex();
         assertEquals(3, tokens.size());
@@ -55,7 +55,7 @@ public class LexerTest {
     }
 
     @Test
-    public void LexTestIdentifier() {
+    public void LexTestIdentifier() throws SyntaxErrorException {
         Lexer lex = new Lexer("lksahf123");
         List<Token> tokens = lex.lex();
         assertEquals(1, tokens.size());
