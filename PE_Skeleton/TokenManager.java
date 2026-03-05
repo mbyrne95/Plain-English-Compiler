@@ -7,10 +7,54 @@ import java.util.Optional;
 public class TokenManager
 {
     private final LinkedList<Token> tokens;
-    public TokenManager(LinkedList<Token> tokens)
-    {
+    public TokenManager(LinkedList<Token> tokens) {
         this.tokens = tokens;
     }
 
+    // if head of list matches the type, remove it - otherwise return empty
+    public Optional<Token> matchAndRemove(Token.TokenTypes type) {
+        if (tokens.isEmpty())
+            return Optional.empty();
+        if (tokens.peek().Type == type)
+            return Optional.of(tokens.remove());
+        return Optional.empty();
+    }
+
+    // check the token at the given offset
+    public Optional<Token> peek(int offset) {
+        // if the offset goes out of bounds either way, return empty
+        if (offset < 0 || offset >= tokens.size())
+            return Optional.empty();
+
+        //convert linked list to array so we can get an index
+        Token[] t = tokens.toArray(new Token[0]);
+        return Optional.of(t[offset]);
+    }
+
+    // check if the next two tokens match the provided types, returns of true
+    public boolean nextTwoTokensMatch(Token.TokenTypes first, Token.TokenTypes second) {
+        Optional<Token> token0 = peek(0);
+        Optional<Token> token1 = peek(1);
+        return (token0.isPresent() && token1.isPresent() && token0.get().Type == first && token1.get().Type == second);
+    }
+
+    public int getCurrentLine() {
+        if (tokens.isEmpty())
+            return -1;
+        else
+            return tokens.peek().LineNumber;
+    }
+
+    public int getCurrentColumn() {
+        if (tokens.isEmpty())
+            return -1;
+        else
+            return tokens.peek().ColumnNumber;
+    }
+
+    // quick helper that returns if we've gone through all the tokens
+    public boolean isDone() {
+        return tokens.isEmpty();
+    }
 }
 
