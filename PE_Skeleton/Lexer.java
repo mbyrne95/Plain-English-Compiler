@@ -59,7 +59,7 @@ public class Lexer    {
         punctuation.put("<", Token.TokenTypes.LESSTHAN);
     }
 
-    boolean debug = true;
+    boolean debug = false;
 
     public List<Token> lex() throws SyntaxErrorException {
         State CurrentState = State.ENTRY;
