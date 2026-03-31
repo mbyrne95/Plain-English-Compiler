@@ -2,7 +2,6 @@ package PlainEnglish;
 
 import PlainEnglish.AST.*;
 
-import java.io.OptionalDataException;
 import java.util.LinkedList;
 import java.util.Optional;
 
@@ -39,6 +38,7 @@ public class PlainEnglishParser  {
             }
 
             // if we didn't get the above just assume it was an unexpected token
+            throw new SyntaxErrorException("unexpected token", tm.getCurrentLine(), tm.getCurrentColumn());
         }
         return Optional.of(p);
     }
@@ -356,21 +356,28 @@ public class PlainEnglishParser  {
         return Optional.of(m);
     }
 
-    // stubbed out
+    // TODO: this
+    //If = "If" BoolExpTerm NEWLINE+ StatementBlock ("else" NEWLINE {falseCase}StatementBlock)?
     private Optional<If> ifStatement() throws SyntaxErrorException {
         return Optional.empty(); // this is temporary – so it will compile and execute
     }
 
-    // stubbed out
+    // TODO: this
+    //Loop = "Loop" BoolExpTerm NEWLINE+ StatementBlock
     private Optional<Loop> loop() throws SyntaxErrorException {
         return Optional.empty(); // this is temporary – so it will compile and execute
     }
 
-    // stubbed out
+    /*
+        public String name;
+        public Optional<String> obj= Optional.empty();
+        public LinkedList<Expression> parameter= new LinkedList<>();
+     */
+    // FunctionCall = {name}IDENTIFIER {obj}IDENTIFIER? ({ignore}"with" {parameter}Expression ("," {parameter}Expression)* )? NEWLINE+
+    // TODO: this
     private Optional<FunctionCall> functionCall() throws SyntaxErrorException {
         return Optional.empty(); // this is temporary – so it will compile and execute
     }
-
 
     /*
         public LinkedList<Term> term= new LinkedList<>();
@@ -382,8 +389,9 @@ public class PlainEnglishParser  {
         e.term.add(term().get());
 
         // similar to term - loop get + or - and a term
-        while ( tm.peek(0).get().Type == Token.TokenTypes.PLUS ||
-                tm.peek(0).get().Type == Token.TokenTypes.HYPHEN ) {
+        while ( tm.peek(0).isPresent() &&
+                (tm.peek(0).get().Type == Token.TokenTypes.PLUS ||
+                tm.peek(0).get().Type == Token.TokenTypes.HYPHEN) ) {
             plusORhyphen i;
             if (tm.matchAndRemove(Token.TokenTypes.PLUS).isPresent()) {
                 i = plusORhyphen.plus;
@@ -397,7 +405,7 @@ public class PlainEnglishParser  {
             e.term.add(term().get());
         }
 
-        return Optional.of(e); // this is temporary – so it will compile and execute
+        return Optional.of(e);
     }
 
     /*
@@ -411,9 +419,10 @@ public class PlainEnglishParser  {
 
         // we need to loop and get an asterisk/slash/percent and a factor
         // get the symbol, add it to the list, get the factor, add it to ist
-        while ( tm.peek(0).get().Type == Token.TokenTypes.ASTERISK ||
+        while ( tm.peek(0).isPresent() && (
+                tm.peek(0).get().Type == Token.TokenTypes.ASTERISK ||
                 tm.peek(0).get().Type == Token.TokenTypes.SLASH ||
-                tm.peek(0).get().Type == Token.TokenTypes.PERCENT ) {
+                tm.peek(0).get().Type == Token.TokenTypes.PERCENT )) {
             asteriskORslashORpercent i;
             if (tm.matchAndRemove(Token.TokenTypes.ASTERISK).isPresent())
                 i = asteriskORslashORpercent.asterisk;
@@ -454,7 +463,7 @@ public class PlainEnglishParser  {
         //var reference
         // t = tm.matchAndRemove(Token.TokenTypes.IDENTIFIER);
         // can't consume identifier - variable reference needs it
-        if (tm.peek(0).get().Type == Token.TokenTypes.IDENTIFIER) {
+        if (tm.peek(0).isPresent() && tm.peek(0).get().Type == Token.TokenTypes.IDENTIFIER) {
             f.variablereference = variableReference();
             return Optional.of(f);
         }
@@ -498,5 +507,88 @@ public class PlainEnglishParser  {
         // can't just return optional empty because other methods are expecting an actual return
         throw new SyntaxErrorException("expected a char or string or number or bool or expression...", tm.getCurrentLine(), tm.getCurrentColumn());
     }
-}
 
+    /*
+        public Optional<BoolExpFactor> boolexpfactor = Optional.empty();
+        public LinkedList<andORor> theandORor = new LinkedList<>();
+        public LinkedList<BoolExpTerm> boolexpterm = new LinkedList<>();
+        public boolean not;
+        public Optional<BoolExpTerm> notTerm = Optional.empty();
+     */
+    //BoolExpTerm =  BoolExpFactor (("and"|"or") BoolExpTerm)* | "not" {notTerm}BoolExpTerm
+    private Optional<BoolExpTerm> boolExpTerm() throws SyntaxErrorException {
+        // boolexpTerm = (asdfadf) (AND a)  || boolexpTerm = NOT (asdasdf)
+        // check not first
+        BoolExpTerm b = new BoolExpTerm();
+        if(tm.matchAndRemove(Token.TokenTypes.NOT).isEmpty()) {
+            b.not = false;
+            b.boolexpfactor = boolExpFactor();
+
+            // check for and/ors, repeat while they exist
+            while (tm.peek(0).isPresent() &&
+                    (tm.peek(0).get().Type == Token.TokenTypes.AND ||
+                    tm.peek(0).get().Type == Token.TokenTypes.OR)){
+                // eat the token and assign
+                if (tm.matchAndRemove(Token.TokenTypes.AND).isPresent())
+                    b.theandORor.add(andORor.and);
+                else if (tm.matchAndRemove(Token.TokenTypes.OR).isPresent())
+                    b.theandORor.add(andORor.or);
+                Optional<BoolExpTerm> bet = boolExpTerm();
+                if (bet.isEmpty())
+                    throw new SyntaxErrorException("expected boolean term after conditional",tm.getCurrentLine(),tm.getCurrentColumn());
+                b.boolexpterm.add(bet.get());
+            }
+            return Optional.of(b);
+        }
+        // if not is present, then just not + expterm
+        b.not = true;
+        Optional<BoolExpTerm> recurse = boolExpTerm();
+        if (recurse.isEmpty())
+            throw new SyntaxErrorException("expected boolean expression after NOT",tm.getCurrentLine(),tm.getCurrentColumn());
+        b.notTerm = recurse;
+        return Optional.of(b);
+    }
+
+    /*
+        public Optional<Expression> lhs = Optional.empty();
+        public Optional<compareOps> thecompareOps = Optional.empty();
+        public Optional<Expression> rhs = Optional.empty();
+        public Optional<VariableReference> variablereference = Optional.empty();
+     */
+    // BoolExpFactor = ({lhs}Expression {compareOps}( "==" | "!=" | "<=" | ">=" | ">" | "<" ) {rhs}Expression) | VariableReference
+    private Optional<BoolExpFactor> boolExpFactor() throws SyntaxErrorException {
+        BoolExpFactor b = new BoolExpFactor();
+
+        // get expression, expression() throws if we get empty
+        Optional<Expression> lhs = expression();
+
+        // try to get one of the compare operators
+        if (tm.matchAndRemove(Token.TokenTypes.DOUBLEEQUAL).isPresent())
+            b.thecompareOps = Optional.of(compareOps.doubleequal);
+        else if (tm.matchAndRemove(Token.TokenTypes.LESSTHAN).isPresent())
+            b.thecompareOps = Optional.of(compareOps.lessthan);
+        else if (tm.matchAndRemove(Token.TokenTypes.LESSTHANEQUAL).isPresent())
+            b.thecompareOps = Optional.of(compareOps.lessthanequal);
+        else if (tm.matchAndRemove(Token.TokenTypes.GREATERTHAN).isPresent())
+            b.thecompareOps = Optional.of(compareOps.greaterthan);
+        else if (tm.matchAndRemove(Token.TokenTypes.GREATERTHANEQUAL).isPresent())
+            b.thecompareOps = Optional.of(compareOps.greaterthanequal);
+        else if (tm.matchAndRemove(Token.TokenTypes.NOTEQUAL).isPresent())
+            b.thecompareOps = Optional.of(compareOps.notequal);
+
+        // if the compare op is empty, then this is just a variable ref and we need to
+        // get lhs's variable ref
+        if (b.thecompareOps.isEmpty()) {
+            Optional<VariableReference> vr = lhs.get().term.get(0).factor.get(0).variablereference;
+            b.variablereference = vr;
+            return Optional.of(b);
+        }
+
+        b.lhs = lhs;
+        b.rhs = expression();
+        if (b.rhs.isEmpty())
+            throw new SyntaxErrorException("expected expression on right side of comparator", tm.getCurrentLine(), tm.getCurrentColumn());
+
+        return Optional.of(b);
+    }
+}
