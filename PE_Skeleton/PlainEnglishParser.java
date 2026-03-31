@@ -356,16 +356,58 @@ public class PlainEnglishParser  {
         return Optional.of(m);
     }
 
-    // TODO: this
+
+    /*
+        public BoolExpTerm boolexpterm;
+        public StatementBlock statementblock;
+        public boolean $else;
+        public Optional<StatementBlock> falseCase= Optional.empty();
+     */
     //If = "If" BoolExpTerm NEWLINE+ StatementBlock ("else" NEWLINE {falseCase}StatementBlock)?
     private Optional<If> ifStatement() throws SyntaxErrorException {
-        return Optional.empty(); // this is temporary – so it will compile and execute
+        // check the if
+        If i = new If();
+        if (tm.matchAndRemove(Token.TokenTypes.IF).isEmpty())
+            return Optional.empty();
+
+        //get the condition (bool exp term)
+        Optional<BoolExpTerm> condition = boolExpTerm();
+        if (condition.isEmpty())
+            throw new SyntaxErrorException("expected boolean exp term after IF", tm.getCurrentLine(), tm.getCurrentColumn());
+        i.boolexpterm = condition.get();
+
+        // newline, then statement block
+        requireNewLine();
+        i.statementblock = statementBlock();
+
+        // optional else statement new lne statement block
+        if (tm.matchAndRemove(Token.TokenTypes.ELSE).isPresent()) {
+            i.$else = true;
+            requireNewLine();
+            i.falseCase = Optional.of(statementBlock());
+        }
+
+        return Optional.of(i);
     }
 
-    // TODO: this
+    /*
+        public BoolExpTerm boolexpterm;
+        public StatementBlock statementblock;
+     */
     //Loop = "Loop" BoolExpTerm NEWLINE+ StatementBlock
     private Optional<Loop> loop() throws SyntaxErrorException {
-        return Optional.empty(); // this is temporary – so it will compile and execute
+        // same as if
+        Loop l = new Loop();
+        if (tm.matchAndRemove(Token.TokenTypes.LOOP).isEmpty())
+            return Optional.empty();
+        Optional<BoolExpTerm> boolExpTerm = boolExpTerm();
+        if (boolExpTerm.isEmpty())
+            throw new SyntaxErrorException("expected boolean exp term after LOOP", tm.getCurrentLine(), tm.getCurrentColumn());
+        l.boolexpterm = boolExpTerm.get();
+        requireNewLine();
+        l.statementblock = statementBlock();
+
+        return Optional.of(l);
     }
 
     /*
@@ -374,9 +416,35 @@ public class PlainEnglishParser  {
         public LinkedList<Expression> parameter= new LinkedList<>();
      */
     // FunctionCall = {name}IDENTIFIER {obj}IDENTIFIER? ({ignore}"with" {parameter}Expression ("," {parameter}Expression)* )? NEWLINE+
-    // TODO: this
     private Optional<FunctionCall> functionCall() throws SyntaxErrorException {
-        return Optional.empty(); // this is temporary – so it will compile and execute
+        FunctionCall f = new FunctionCall();
+        Optional<Token> id1 = tm.matchAndRemove(Token.TokenTypes.IDENTIFIER);
+        if (id1.isEmpty())
+            return Optional.empty();
+        f.name = id1.get().Value.orElse("");
+
+        //get optional second identifier
+        if (tm.peek(0).get().Type == Token.TokenTypes.IDENTIFIER) {
+            Optional<Token> id2 = tm.matchAndRemove(Token.TokenTypes.IDENTIFIER);
+            String str = id2.get().Value.orElse("");
+            f.obj = Optional.of(str);
+        }
+        // with expression (, expression)* newline
+        if (tm.matchAndRemove(Token.TokenTypes.WITH).isPresent()) {
+            Optional<Expression> e = expression();
+            if (e.isEmpty())
+                throw new SyntaxErrorException("expected expression after WITH", tm.getCurrentLine(), tm.getCurrentColumn());
+            f.parameter.add(e.get());
+            // loop while we have comma
+            while(tm.matchAndRemove(Token.TokenTypes.COMMA).isPresent()){
+                Optional<Expression> ex = expression();
+                if (ex.isEmpty())
+                    throw new SyntaxErrorException("expected expression after COMMA", tm.getCurrentLine(), tm.getCurrentColumn());
+                f.parameter.add(ex.get());
+            }
+        }
+        requireNewLine();
+        return Optional.of(f);
     }
 
     /*
