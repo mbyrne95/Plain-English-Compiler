@@ -10,6 +10,8 @@ public class Interpreter {
 
     // every time a method is entered, push a hashmap with every variable
     Stack<HashMap<String, InterpreterDataType>> variables = new Stack<>();
+    HashMap<String, TypeDef> typedefs = new HashMap<>();
+    HashMap<String, Method> methods = new HashMap<>();
 
     //Program = (NEWLINE | TypeDef | Method)+
     public Interpreter(Program prog) {
@@ -97,7 +99,7 @@ public class Interpreter {
     boolean DoBoolFactor(BoolExpFactor b) {
         // first we gotta check if everything is present, if it is, we need to evaluate based on the compare ops
         if (b.lhs.isPresent() && b.thecompareOps.isPresent() && b.rhs.isPresent()){
-
+            
         }
     }
 
@@ -239,8 +241,53 @@ public class Interpreter {
     }
 
     //Make = "Make" {type}IDENTIFIER "named" {name}IDENTIFIER NEWLINE+
+    //    public String type;
+    //    public String name;
     void DoMake (Make m) {
-    //todo: this
+        if (m.type.toLowerCase().equals("number")){
+            NumberInterpreterDataType n = new NumberInterpreterDataType();
+            n.value = 0;
+            variables.peek().put(m.name, n);
+        }
+        else if (m.type.toLowerCase().equals("string")) {
+            StringInterpreterDataType s = new StringInterpreterDataType();
+            s.value = "";
+            variables.peek().put(m.name, s);
+        }
+        else if (m.type.toLowerCase().equals("boolean")) {
+            BooleanInterpreterDataType b = new BooleanInterpreterDataType();
+            b.value = false;
+            variables.peek().put(m.name, b);
+        }
+        // otherwise, it could be an existing object - check typedefs for it
+        else {
+            if (typedefs.get(m.type) == null)
+                throw new RuntimeException("undefined type");
+            // otherwise, we need to make a blank object
+            ObjectInterpreterDataType o = new ObjectInterpreterDataType();
+            o.type = m.type;
+            // then iterate through its fields and fill with default values
+            TypeDef t = typedefs.get(m.type);
+            for (int i = 0; i < t.field.size(); i++) {
+                Field f = t.field.get(i);
+                // repeat the above checks, filling in field with the same default values
+                if (f.type.toLowerCase().equals("number")){
+                    NumberInterpreterDataType n = new NumberInterpreterDataType();
+                    n.value = 0;
+                    o.fields.put(f.name, n);
+                }
+                else if (f.type.toLowerCase().equals("string")) {
+                    StringInterpreterDataType s = new StringInterpreterDataType();
+                    s.value = "";
+                    o.fields.put(f.name, s);
+                }
+                else if (f.type.toLowerCase().equals("boolean")) {
+                    BooleanInterpreterDataType b = new BooleanInterpreterDataType();
+                    b.value = false;
+                    o.fields.put(f.name, b);
+                }
+            }
+            variables.peek().put(m.name,o);
+        }
     }
-
 }
