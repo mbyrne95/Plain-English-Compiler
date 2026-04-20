@@ -119,9 +119,13 @@ public class PlainEnglishParser  {
     // helper to eat newline tokens
     private void requireNewLine() throws SyntaxErrorException {
         // if there isn't at least one (REQUIRE new line), throw
-        if (tm.matchAndRemove(Token.TokenTypes.NEWLINE).isEmpty())
+        if (tm.matchAndRemove(Token.TokenTypes.NEWLINE).isEmpty()) {
+            if (tm.isDone())
+                return;
+            if (tm.peek(0).isPresent() && tm.peek(0).get().Type == Token.TokenTypes.DEDENT)
+                return;
             throw new SyntaxErrorException("Could not find expected newline", tm.getCurrentLine(), tm.getCurrentColumn());
-
+        }
         // check if the currentToken is present and value is newline - remove while that is the case
         while ( tm.peek(0).isPresent() && tm.peek(0).get().Type == Token.TokenTypes.NEWLINE )
             tm.matchAndRemove(Token.TokenTypes.NEWLINE);
