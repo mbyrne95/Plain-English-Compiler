@@ -241,17 +241,21 @@ public class Interpreter {
                 if (op == compareOps.lessthan)
                     return (leftVal < rightVal);
             }
-            // examples don't handle string comparisons, for now just throw if we get here
-            throw new RuntimeException("comparison between non-numbers");
+            else if (leftExp instanceof StringInterpreterDataType ls && rightExp instanceof StringInterpreterDataType rs) {
+                compareOps op = b.thecompareOps.get();
+                if (op == compareOps.doubleequal) return ls.value.equals(rs.value);
+                if (op == compareOps.notequal)    return !ls.value.equals(rs.value);
+                throw new RuntimeException("unsupported string comparison operator");
+            }
         }
         // handle variable reference case
         else if (b.variablereference.isPresent()) {
             // need to a) look up var in the stack and get the value and
             // b) verify that it's actually a boolean
             for (int i = variables.size() - 1; i >= 0; i--) { // top to bottom so we check current first
-                String vrObjectName = b.variablereference.get().$object.get();
-                if (variables.get(i).containsKey(vrObjectName)) {
-                    InterpreterDataType j = variables.get(i).get(vrObjectName);
+                String vrName = b.variablereference.get().name;
+                if (variables.get(i).containsKey(vrName)) {
+                    InterpreterDataType j = variables.get(i).get(vrName);
                     if (j instanceof BooleanInterpreterDataType bar)
                         return bar.value;
                     // otherwise, it's not a bool and we throw
@@ -316,7 +320,7 @@ public class Interpreter {
             if (t.theasteriskORslashORpercent.get(i) == asteriskORslashORpercent.asterisk)
                 operationResult.value = rightVal * leftVal;
             else if (t.theasteriskORslashORpercent.get(i) == asteriskORslashORpercent.slash)
-                operationResult.value = leftVal / rightVal;
+                operationResult.value = (leftVal / rightVal);
             else
                 operationResult.value = leftVal % rightVal;
             result = operationResult;
@@ -385,7 +389,11 @@ public class Interpreter {
         // string literal
         if (f.stringliteral.isPresent()) {
             StringInterpreterDataType s = new StringInterpreterDataType();
-            s.value = f.stringliteral.get();
+            String raw = f.stringliteral.get();
+            if (raw.startsWith("\""))
+                s.value = raw.substring(1, raw.length() - 1);
+            else
+                s.value = raw;
             return s;
         }
         // char literal

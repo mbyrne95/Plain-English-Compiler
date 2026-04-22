@@ -1,0 +1,43 @@
+To Math with number named m, number named n, string named op
+    If op == "add"
+        Print with m + n
+    Else
+        If op == "subtract"
+            /* We do not want a
+            negative answer */
+            If m >= n
+                Print with m - n
+            Else
+                Print with n - m
+        Else
+            If op == "multiply"
+                Print with m * n
+            Else
+                /* Prevent division by 0*/
+                If op == "divide"
+                    If n != 0
+                        Print with m / n
+                    Else
+                        Print with "Cannot do division by 0"
+                Else
+                    If op == "mod" or op == "remainder"
+                        If n < m
+                            Print with m % n
+                        Else
+                            Print with n % m
+                    Else
+                        Print with "INVALID OPERATION"
+
+To Run
+    Print with "9 * 3:"
+    Math with 9, 3, "multiply"
+    Print with "----------"
+    Print with "21 - 5:"
+    Math with 5, 21, "subtract"
+    Print with "----------"
+    Print with "12 / 0"
+    Math with 12, 0, "divide"
+    Print with "----------"
+    Print with "Trying other operation - exponent"
+    Math with 2, 2, "exponent"
+    Print with "----------"

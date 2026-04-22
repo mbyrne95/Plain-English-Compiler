@@ -1,7 +1,7 @@
 package PlainEnglish;
 
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 
 public class Lexer    {
@@ -61,9 +61,9 @@ public class Lexer    {
 
     boolean debug = false;
 
-    public List<Token> lex() throws SyntaxErrorException {
+    public LinkedList<Token> lex() throws SyntaxErrorException {
         State CurrentState = State.ENTRY;
-        List<Token> ListOfTokens = new ArrayList<>();
+        LinkedList<Token> ListOfTokens = new LinkedList<>();
         StringBuilder sb = new StringBuilder();
         String CurrentWord = "";
 
@@ -76,6 +76,10 @@ public class Lexer    {
 
         while( !tm.isAtEnd() ) {
             char c = tm.peekCharacter();
+            if (c == '\r') {
+                tm.getCharacter();
+                continue;
+            }
             if (debug)
                 System.out.println("State: " + CurrentState + ", Char: '" + c + "', Line: " + LineNumber + ", Col: " + ColumnNumber);
             switch(CurrentState){

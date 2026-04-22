@@ -1,0 +1,30 @@
+#########################
+File: .\InterpreterTest_If.eng
+9 * 3:
+27.0
+----------
+21 - 5:
+16.0
+----------
+12 / 0
+Cannot do division by 0
+----------
+Trying other operation - exponent
+INVALID OPERATION
+----------
+#########################
+File: .\InterpreterTest_Loop.eng
+2 ^ 10:
+1024.0
+----------
+125 ^ 1:
+125.0
+----------
+987 ^ 0:
+1.0
+----------
+#########################
+File: .\InterpreterTest_Recursion.eng
+Looking for 10 between 0-25
+Number of recursive calls:
+19.0

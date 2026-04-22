@@ -1,0 +1,25 @@
+To Exponent with number named base, number named exp
+    Make number named retVal
+    Make number named i
+    Set i to 0
+    Set retVal to 1
+
+    If exp < 0
+        Print with "INVALID OPERATION"
+    Else
+        Loop i < exp
+            Set retVal to retVal*base
+            Set i to i+1
+        Print with retVal
+
+
+To Run
+    Print with "2 ^ 10:"
+    Exponent with 2, 10
+    Print with "----------"
+    Print with "125 ^ 1:"
+    Exponent with 125, 1
+    Print with "----------"
+    Print with "987 ^ 0:"
+    Exponent with 987, 0
+    Print with "----------"

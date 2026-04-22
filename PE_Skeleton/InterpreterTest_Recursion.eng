@@ -1,0 +1,16 @@
+To Search with number named start, number named end, number named value, number named searchCalls
+    Make number named current
+    Set current to start + (end - start)/2
+    Print with current
+    If current == value
+        Print with "Number of recursive calls: "
+        Print with searchCalls
+    Else
+        If current < value
+            Search with current, end, value, searchCalls + 1
+        Else
+            Search with start, current, value, searchCalls + 1
+
+To Run
+    Print with "Looking for 10 between 0-25"
+    Search with 0, 25, 10, 1
