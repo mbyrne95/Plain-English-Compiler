@@ -1,0 +1,41 @@
+A Point is
+    number x
+    number y
+    number z
+
+To Assign a Point with number named xin, number named yin, number named zin
+    Set x to xin
+    Set y to yin
+    Set z to zin
+
+/* Babylonian method */
+To SquareRoot with number named in, number named result
+    Make number named guess
+    Make number named iterator
+    Set guess to in / 2
+    Set iterator to 0
+    Loop iterator < 5
+        Set guess to (guess + in / guess) / 2
+        Set iterator to iterator + 1
+    Set result to guess
+
+To FindDistance with Point named first, Point named second, number named result
+    Make number named deltaX
+    Make number named deltaY
+    Make number named deltaZ
+    Set deltaX to x of first - x of second
+    Set deltaY to y of first - y of second
+    Set deltaZ to z of first - z of second
+    Make number named temp
+    Set temp to deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ
+    SquareRoot with temp, result
+
+To Run
+    Make Point named p1
+    Make Point named p2
+    Assign p1 with 1,2,3
+    Assign p2 with 2,3,4
+    Make number named res
+    FindDistance with p1, p2, res
+    Print with "Distance: "
+    Print with res

@@ -252,7 +252,7 @@ public class Lexer    {
                     break;
                 case PUNCTUATION:
                     // first we should check if we're starting a comment
-                    if (sb.toString().equals("/") && tm.peekCharacter() == '*'){
+                    if (sb.toString().equals("/") && c == '*'){
                         sb.setLength(0);        // clear the slash we added
                         tm.getCharacter();      // clear the *
                         ColumnNumber += 1;

@@ -198,6 +198,11 @@ public class PlainEnglishParser  {
             // optional<string>
             String nameString = name.get().Value.orElse("");
             p.nameOverride = Optional.of(nameString);
+        } else if (tm.peek(0).isPresent() && tm.peek(0).get().Type == Token.TokenTypes.IDENTIFIER) {
+            // an identifier follows the type but 'named' was missing - give a helpful error
+            throw new SyntaxErrorException(
+                    "expected 'named' before parameter name for type '" + p.paramType + "'",
+                    tm.getCurrentLine(), tm.getCurrentColumn());
         }
         return p;
     }
